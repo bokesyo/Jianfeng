@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{% block title %}剑锋 Jianfeng DEMO{% endblock %}</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" type="text/css">
+    <script type="text/jscript">
+        function change_fact(c_type){
+            document.getElementById("c_type").value=c_type;
+            document.getElementById("body_textarea").focus()
+            document.getElementById("body_textarea").value=""
+        }
+
+        function add_spec(this_input){
+            document.getElementById("body_textarea").value=document.getElementById("body_textarea").value+this_input;
+            document.getElementById("body_textarea").focus()
+        }
+
+        function add_function(this_input){
+            if (document.getElementById("c_type").value=="Predicates"){
+                document.getElementById("body_textarea").value=document.getElementById("body_textarea").value+this_input;
+                document.getElementById("body_textarea").focus()
+            }
+
+            if (document.getElementById("c_type").value=="Query"){
+                var this_in = this_input
+                var s = this_in.replace("(","")
+                document.getElementById("body_textarea").value=document.getElementById("body_textarea").value + s
+                document.getElementById("body_textarea").focus()
+            }
+
+
+        }
+    </script>
+</head>
+
+
+
+<body>
+<main class="container">
+    <header>
+        <h1 class="text-center display-4">
+            <a href="{{ url_for('index') }}" class="text-success"><strong>剑锋 Jianfeng</strong></a>
+            <small class="text-muted sub-title">DEMO</small>
+        </h1>
+        <h4 class="text-center">
+            <small>基于马尔可夫逻辑网和自然语言处理构建的新型社交网络</small>
+        </h4>
+
+        <h6 class="text-center">
+            <small>作者: {Bokai XU, Zhuoyu LI, Xiyan LUO} @ CUHK(Shenzhen)</small>
+        </h6>
+
+    </header>
+
+    {% for message in get_flashed_messages() %}
+        <div class="alert alert-info">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            {{ message }}
+        </div>
+    {% endfor %}
+    {% block content %}{% endblock %}
+<hr/>
+    <footer class="text-center">
+        {% block footer %}
+            <small>香港中文大学（深圳） ERG3020 小组项目</small>
+        {% endblock %}
+        <br/>
+<p></p>
+        <form action="/refresh" method="get">
+            <button name="refresh" type=submit class="btn">清空数据</button>
+        </form>
+<p></p>
+        <form action="/clear_func" method="get">
+            <button name="clear_func" type=submit class="btn">清除动作库</button>
+        </form>
+
+    </footer>
+
+</main>
+
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery-3.2.1.slim.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/popper.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/script.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/Action.js') }}"></script>
+{{ moment.include_moment(local_js=url_for('static', filename='js/moment-with-locales.min.js')) }}
+
+<script type="text/javascript">
+document.getElementById("submit_btn").className = "btn btn-primary"
+document.getElementById("c_type").style="display: none"
+document.getElementById("c_type").value="Facts"
+document.getElementById("body_textarea").focus()
+document.getElementById("facts_btn").click()
+
+</script>
+
+
+</body>
+</html>

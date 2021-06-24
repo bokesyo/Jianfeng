@@ -1,0 +1,294 @@
+{% extends 'base.html' %}
+{% from 'bootstrap/form.html' import render_form %}
+
+{% block content %}
+
+<table width="100%" border="0" style="vertical-align: top">
+
+      <tbody>
+      <tr>
+          背景介绍：在2019年末，2020年初爆发的新冠肺炎，在疫情处于萌芽阶段时，在社交网络上引起了一定的注意，但是由于当今社交网络的算法缺陷，
+          我们并没有能够及时对这场疫情做出判断和推测。我们查看了疫情初期社交网络上的留言记录，发现至少在12月15日前，
+          一些人已经得知一些细节，还有一些人已经在提醒大家注意防范。在12月27日前，病毒的分类已经确定。
+          武汉当地的医院也不可能不了解相关事实，但是由于种种原因，这些信息没有能被有效地利用起来。
+          <br/>
+          我们吸取这次疫情带来的教训，希望能开发一种新型社交网络，它能充分利用用户提供的信息，
+          又能权衡各种信息之间的关系，也能够利用已有的先验知识，又能够自我学习，不断进化
+          因此，我们选用了马尔可夫逻辑网络来做这件事情，这一模块是用 Python 库 pracmln 实现的。
+          <br/>
+          结合自然语言处理平台 AllenNLP，我们可以做到对广大用户的覆盖，保证了此平台的通俗易懂性。
+          <br/>
+          在此 Demo 中，我们用 Python flask 框架实现了上述理想社交网络的大部分功能。所有的自然语言处理、推断过程，都是动态而非静态的。
+          <br/>
+          在这个 Demo 中，我们使用了一个相对小的问题情景：
+          <br/>
+          Albert, Bob, David 团伙偷走了期末考试试卷，并在校内社交网络上引起了巨大反响。我们要利用社交网络上人们的发言推断是谁偷了试卷，
+          是谁撒谎了。
+          <br/>
+          <hr/>
+
+      </tr>
+        <tr>
+          <td width="38%" style="vertical-align: top">
+              <!--Name Entities and Functions-->
+                  <h5>评论中提取的命名实体</h5>
+                    <div class="list-group">
+                            <a class="list-group-item list-group-item-action flex-column">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1 text-success">人物</h5>
+                                </div>
+                                <p class="mb-1">{{ nen_per }}</p>
+                            </a>
+                        <a class="list-group-item list-group-item-action flex-column">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1 text-success">组织</h5>
+                                </div>
+                                <p class="mb-1">{{ nen_org }}</p>
+                            </a>
+                        <a class="list-group-item list-group-item-action flex-column">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1 text-success">地理位置</h5>
+                                </div>
+                                <p class="mb-1">{{ nen_loc }}</p>
+                            </a>
+
+
+                    </div>
+                    <p></p>
+
+              <!-- Inference Result Module  -->
+              <h5>马尔可夫逻辑网推断出的背后真相</h5>
+              <p>
+
+              </p>
+
+              <div class="list-group">
+                    {% for double in infresult %}
+                        <a class="list-group-item list-group-item-action flex-column">
+
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1 text-success">{{ double.prob }}%
+                                </h5>
+                            </div>
+
+                            <p class="mb-1">{{ double.event }}</p>
+                        </a>
+                    {% endfor %}
+                </div>
+
+
+          </td>
+
+
+            <td width="4%" style="vertical-align: top">
+                <div class="verticalLine">
+
+
+                </div></td>
+          <td width="58%" style="vertical-align: top">
+              <!-- Input Area -->
+                  <div class="container">
+                    <!-- 胶囊选项卡 -->
+                    <ul class="nav nav-pills">
+                        <li class="active">
+                            <a href="#pan1" data-toggle="pill" class="btn btn-success" style="margin: 10px" id="facts_btn" onclick="change_fact('Facts')">事实</a></li>
+                        <li><a href="#pan2" data-toggle="pill" class="btn btn-success" style="margin: 10px" id="pred_btn" onclick="change_fact('Predicates')">论断</a></li>
+                        <li><a href="#pan3" data-toggle="pill" class="btn btn-success" style="margin: 10px" id="emo_btn" onclick="change_fact('Emotional')">感性评论</a></li>
+                        <li><a href="#pan4" data-toggle="pill" class="btn btn-warning" style="margin: 10px" id="submit_func_btn" onclick="change_fact('SubmitFunction')">提交至动作库</a></li>
+                        <li><a href="#pan5" data-toggle="pill" class="btn btn-primary" style="margin: 10px" id="query_btn" onclick="change_fact('Query')">推断真相</a></li>
+                    </ul>
+                    <!-- 面板 -->
+                    <div class="tab-content">
+                        <div class="tab-pane active" id="pan1">你可以在这里输入你掌握的事实。注意，你只能输入单句，并且注意正确的语法。
+                            <br/>
+                            比如，你知道 Albert 指控 Bob 偷了试卷，你可以输入：
+                            <br/>
+                            Albert accuses Bob of stealing the final paper.
+                            <br/>
+                            在下方发表你所知的事实，只能使用「英文」:
+                            <br/>
+                            <small>未来将会增加引用与来源验证功能。</small>
+
+                        </div>
+                        <div class="tab-pane" id="pan2">论断，顾名思义，是一段普遍性的规律，它不一定正确，但它反映了你的一些思考。
+                            <br/>
+                            我们期望在这里发言的人受过基本的一阶逻辑的训练。我们期望你在这里用一阶逻辑表达式表达你的论断。你的论断将被转化为自然语言，供所有用户点赞，按照获赞的多少确定各自的权重。
+                            <br/>
+                            比如说，大家都不知道在这个情景下，说谎的定义是什么。这时候，作为一个受过一阶逻辑训练的人，你脑子里想，在这个情景下，A,B,C 三个人是一伙的，如果一个人 A 偷了东西，并且另一个人 B 没有能指控他，那么 B 就在撒谎。
+                            那么你可以输入这句表达式：
+                            <br/>
+                            steal_the_final_paper(x) ∩ accuses_of_stealing_the_final_paper(x,y) => !lie(y)
+                            <br/>
+                            提供的一阶逻辑符号和左侧「动作库」中的函数可以帮到你。单击相应的函数，它将自动填充到你的表达式中。
+                            <p></p>
+
+                            <br/>
+                                  <!-- Functions -->
+                    <h5>评论中提取的动作</h5>
+                    <small>从用户评论中提取的相关动作及模式，当你输入「论断」时，点击下面相应的函数，一个原子从句就会自动填充到你的逻辑表达式中。</small>
+              <p></p>
+              <div class="list-group">
+                        {% for function in functions %}
+                            <a class="list-group-item list-group-item-action flex-column" onclick="add_function('{{ function.prefix }}')">
+                                <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1 text-success">{{ function.title }}
+                                </h5>
+                            </div>
+                                <p class="mb-2" style="color: #999999; font-size: 12px">动作代码: {{ function.body }}</p>
+                            </a>
+                        {% endfor %}
+                    </div>
+                    <p></p>
+              <!-- information extraction module ended -->
+                            <br/>
+
+
+                            <input type="button" name="button" value="否定(!)" class="btn btn-info" style="margin: 10px" id="add_not" onclick="add_spec('!')">
+                            <input type="button" name="button" value="意味着(=>)" class="btn btn-info" style="margin: 10px" id="add_entail" onclick="add_spec('=>')">
+                            <input type="button" name="button" value="等价(<=>)" class="btn btn-info" style="margin: 10px" id="add_equal" onclick="add_spec('<=>')">
+                            <input type="button" name="button" value="或(∩)" class="btn btn-info" style="margin: 10px" id="add_or" onclick="add_spec('∩')">
+                            <input type="button" name="button" value="且(∩)" class="btn btn-info" style="margin: 10px" id="add_and" onclick="add_spec('∩')">
+                            <!--
+                            <input type="button" name="button" value="(" class="btn btn-info" style="margin: 10px" id="add_left" onclick="add_spec('(')">
+                            -->
+                            <input type="button" name="button" value="括回" class="btn btn-info" style="margin: 10px" id="add_right" onclick="add_spec(')')">
+                            <input type="button" name="button" value="," class="btn btn-info" style="margin: 10px" id="add_comma" onclick="add_spec(',')">
+
+                            <input type="button" name="button" value="实体1(x)" class="btn btn-info" style="margin: 10px" id="add_x" onclick="add_spec('x')">
+                            <input type="button" name="button" value="实体2(y)" class="btn btn-info" style="margin: 10px" id="add_y" onclick="add_spec('y')">
+                            <input type="button" name="button" value="实体3(z)" class="btn btn-info" style="margin: 10px" id="add_z" onclick="add_spec('z')">
+
+                            <br/>
+                            在下方发表你的论断，只能使用「一阶逻辑语言」:
+                            <br/>
+                        </div>
+
+
+
+                        <div class="tab-pane" id="pan3">
+                            在这个栏目，你可以随意表达你的看法，这些看法不会被我们的算法使用到。
+                            <br/> 比如，你非常痛恨小偷，你可以说: I hate the stealer!
+                            <br/>
+                            在下方发表你的评论，只能使用「英文」:
+                        </div>
+
+                        <div class="tab-pane" id="pan4">
+                            如果你需要提交一些动作模式，请在这里提交：
+                            <br/> 比如，你想在你的一条论断中使用一个还没有被识别 / 提交过的行为，那么你可以在这里预先提交给我们。
+                            <br/> 提交的方式与 「事实」中的方式一致，给出一个例句即可。
+                            <br/>
+                            在下方输入例句，只能使用「英文」:
+                        </div>
+<br/>
+                        <p></p>
+                        <div class="tab-pane" id="pan5">
+                            如果想要推断事情的真相，请在这里输入查询语句。
+                            <br/> 比如，你想知道是谁偷了东西，也即左侧「动作库」中 [a person] stole the final paper 行为，单击该行为，
+                            我们将在输入框里添加对应的表达式：
+                            <br/>stole_the_final_paper
+                            <br/> 如果想查询多个真相，比如你想推断「谁撒谎了，谁偷东西了」，那么，对应的输入语句是：
+                            <br/>lie,stole_the_final_paper
+                            <br/>请注意，查询的事件之间要以逗号(,)分隔。依此类推。
+                            <br/>
+                                                              <!-- Functions -->
+
+              <div class="list-group">
+                        {% for function in functions %}
+                            <a class="list-group-item list-group-item-action flex-column" onclick="add_function('{{ function.prefix }}')">
+                                <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1 text-success">{{ function.title }}
+                                </h5>
+                            </div>
+                                <p class="mb-2" style="color: #999999; font-size: 12px">动作代码: {{ function.body }}</p>
+                            </a>
+                        {% endfor %}
+                    </div>
+                    <p></p>
+                            <br/>
+
+                            在下方输入查询语句，只能使用「动作代码」:
+                            <br/>
+                            <input type="button" name="button" value="逗号分隔(,)" class="btn btn-info" style="margin: 10px" id="add_with" onclick="add_spec(',')">
+                        </div>
+
+                    </div>
+                  </div>
+              {{ render_form(fact_form, action=request.full_path) }}
+<hr/>
+              <p></p>
+
+              <!--Comments area -->
+
+              <!-- This is Predicates Rank 1 -->
+                <h5>{{ predicates|length }} 个论断</h5>
+                <div class="list-group">
+                    {% for predicate in predicates %}
+                        <a class="list-group-item list-group-item-action flex-column">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1 text-success"> {{ predicate.nl_body }}
+                                   <!-- <small class="text-muted"> #{{ loop.revindex }}</small> -->
+                                </h5>
+                            </div>
+                            <p class="mb-1" style="color: #999999; font-size: 12px">一阶逻辑表达式：{{ predicate.body }}</p>
+                        </a>
+                    {% endfor %}
+                </div>
+                <p></p>
+
+                <!-- Facts will be displayed at 2 -->
+
+                <h5>{{ facts|length }} 个事实</h5>
+                <div class="list-group">
+                    {% for fact in facts %}
+                        <a class="list-group-item list-group-item-action flex-column">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1 text-success">{{ fact.nl_body}}
+                                   <!-- <small class="text-muted"> #{{ loop.revindex }}</small> -->
+                                </h5>
+                                <!--
+                                <small data-toggle="tooltip" data-placement="top"
+                                       data-timestamp="{{ fact.timestamp.strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+                                       data-delay="500">
+                                    {{ moment(fact.timestamp).fromNow(refresh=True) }}
+                                </small>
+                                -->
+                            </div>
+                            <p class="mb-1" style="color: #999999; font-size: 12px">一阶逻辑表达式：{{ fact.body }}</p>
+                        </a>
+                    {% endfor %}
+                </div>
+                <p></p>
+                <!-- Emotional -->
+                <h5>{{ emotionals|length }} 个感性评论</h5>
+                <div class="list-group">
+                    {% for emotional in emotionals %}
+                        <a class="list-group-item list-group-item-action flex-column">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1 text-success">{{ emotional.nl_body }}
+                                   <!-- <small class="text-muted"> #{{ loop.revindex }}</small> -->
+                                </h5>
+                                <!--<small data-toggle="tooltip" data-placement="top"
+                                       data-timestamp="{{ emotional.timestamp.strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+                                       data-delay="500">
+                                    {{ moment(emotional.timestamp).fromNow(refresh=True) }}
+                                </small>-->
+                            </div>
+                            <!--
+                            <p class="mb-1">{{ emotional.entity }}</p>
+                            -->
+
+                        </a>
+                    {% endfor %}
+                </div>
+
+          </td>
+        </tr>
+
+        <tr>
+
+        </tr>
+      </tbody>
+</table>
+
+
+{% endblock %}
